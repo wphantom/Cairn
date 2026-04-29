@@ -61,6 +61,7 @@ export function showPrompt(
       // Restore status span
       const status = document.createElement('span');
       status.className = 'status';
+      status.textContent = val ? `/ ${val}` : '';
       if (statusline) statusline.appendChild(status);
       state.searchActive = false;
       await callback(val);
