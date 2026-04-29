@@ -70,8 +70,8 @@ function handleNormalMode(e: KeyboardEvent) {
     return;
   }
 
-  // In search mode, skip navigation only (j/k handled by prompt)
-  if (state.searchActive && (key === 'j' || key === 'k' || key === 'ArrowDown' || key === 'ArrowUp')) {
+  // In search mode, skip arrow key navigation only
+  if (state.searchActive && (key === 'ArrowDown' || key === 'ArrowUp')) {
     return;
   }
 
@@ -363,15 +363,6 @@ async function handleCommand(cmd: string) {
       });
       store.applyFilterAndSearch();
       await store.saveTasks();
-      render();
-      break;
-    case 'filter':
-      const expr = parts.slice(1).join(' ');
-      await store.applyFilter(expr);
-      render();
-      break;
-    case 'clear':
-      store.clearFilter();
       render();
       break;
     case 'open':

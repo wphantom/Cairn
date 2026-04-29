@@ -39,15 +39,15 @@ export function showPrompt(
   input.addEventListener('keydown', async (e) => {
     e.stopPropagation();
     
-    // Allow j/k for navigation during live search
-    if (liveCallback && (e.key === 'j' || e.key === 'k' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    // Allow arrow keys only for navigation during live search
+    if (liveCallback && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       const sortedTasks = store.getSortedTasks();
       const maxCursor = sortedTasks.length - 1;
       
-      if (e.key === 'j' || e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         state.cursor = Math.min(state.cursor + 1, maxCursor);
-      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+      } else if (e.key === 'ArrowUp') {
         state.cursor = Math.max(state.cursor - 1, 0);
       }
       render();

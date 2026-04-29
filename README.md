@@ -39,7 +39,7 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 
 **Commands**
 - `:` - Enter command mode
-- `/` - Search
+- `/` - Live search (arrow keys to navigate, Enter to confirm, Esc to cancel)
 - `?` - Toggle help
 - `q` - Hide window
 - `Esc` - Cancel/exit modes
@@ -53,8 +53,6 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 - `:s@` - Sort by context name (alphabetical)
 - `:s+` - Sort by project name (alphabetical)
 - `:sD` - Sort by due date (nearest first)
-- `:filter [expr]` - Filter tasks (e.g., `:filter +project`)
-- `:clear` - Clear filter
 - `:sort` - Sort by priority then date
 - `:archive` - Archive done tasks to `~/todo.done.txt`
 
