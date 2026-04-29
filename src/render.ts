@@ -115,8 +115,8 @@ function updateFilterIndicator() {
   const indicator = document.querySelector('.filter-indicator');
   if (!indicator) return;
 
-  if (state.filter) {
-    indicator.textContent = `[filtered]`;
+  if (state.filter || state.search) {
+    indicator.textContent = `[FILTERED]`;
     indicator.classList.add('active');
   } else {
     indicator.textContent = '';
