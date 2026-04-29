@@ -1,4 +1,5 @@
 import { state } from './store';
+import * as store from './store';
 
 export function render() {
   const list = document.getElementById('list');
@@ -6,7 +7,7 @@ export function render() {
 
   list.innerHTML = '';
 
-  const tasks = state.filteredTasks;
+  const tasks = store.getSortedTasks();
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
     const li = document.createElement('li');

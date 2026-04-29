@@ -29,9 +29,10 @@ function handleInsertMode(e: KeyboardEvent) {
     if (input) {
       const text = input.value;
       (async () => {
-        await store.editTask(state.cursor, text);
-        await store.addTaskBelow(state.cursor);
-        state.cursor = state.filteredTasks.length - 1;
+        const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+        await store.editTask(filteredIdx, text);
+        await store.addTaskBelow(filteredIdx);
+        state.cursor = store.getSortedTasks().length - 1;
         state.mode = 'INSERT';
         render();
         setTimeout(() => {
@@ -73,10 +74,12 @@ function handleNormalMode(e: KeyboardEvent) {
   clearTimeout(bufferTimeout as any);
 
   let handled = false;
+  const sortedTasks = store.getSortedTasks();
+  const maxCursor = sortedTasks.length - 1;
 
   if (key === 'j' || key === 'ArrowDown') {
     e.preventDefault();
-    state.cursor = Math.min(state.cursor + 1, state.filteredTasks.length - 1);
+    state.cursor = Math.min(state.cursor + 1, maxCursor);
     keyBuffer = '';
     handled = true;
   } else if (key === 'k' || key === 'ArrowUp') {
@@ -91,14 +94,15 @@ function handleNormalMode(e: KeyboardEvent) {
     handled = true;
   } else if (key === 'G') {
     e.preventDefault();
-    state.cursor = state.filteredTasks.length - 1;
+    state.cursor = maxCursor;
     keyBuffer = '';
     handled = true;
   } else if (key === 'o') {
     e.preventDefault();
     (async () => {
-      await store.addTaskBelow(state.cursor);
-      state.cursor = state.filteredTasks.length - 1;
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.addTaskBelow(filteredIdx);
+      state.cursor = store.getSortedTasks().length - 1;
       state.mode = 'INSERT';
       render();
     })();
@@ -107,7 +111,8 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === 'O') {
     e.preventDefault();
     (async () => {
-      await store.addTaskAbove(state.cursor);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.addTaskAbove(filteredIdx);
       state.mode = 'INSERT';
       render();
     })();
@@ -126,7 +131,8 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === 'x') {
     e.preventDefault();
     (async () => {
-      await store.toggleDone(state.cursor);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.toggleDone(filteredIdx);
       render();
     })();
     keyBuffer = '';
@@ -134,7 +140,8 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (keyBuffer === 'dd') {
     e.preventDefault();
     (async () => {
-      await store.deleteTask(state.cursor);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.deleteTask(filteredIdx);
       render();
     })();
     keyBuffer = '';
@@ -143,7 +150,8 @@ function handleNormalMode(e: KeyboardEvent) {
     e.preventDefault();
     const prio = keyBuffer[1].toUpperCase();
     (async () => {
-      await store.setPriority(state.cursor, prio);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.setPriority(filteredIdx, prio);
       render();
     })();
     keyBuffer = '';
@@ -151,7 +159,8 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (keyBuffer === 'pp') {
     e.preventDefault();
     (async () => {
-      await store.setPriority(state.cursor, null);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.setPriority(filteredIdx, null);
       render();
     })();
     keyBuffer = '';
@@ -160,7 +169,8 @@ function handleNormalMode(e: KeyboardEvent) {
     e.preventDefault();
     showPrompt('Due date (YYYY-MM-DD): ', async (date) => {
       if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        await store.setDueDate(state.cursor, date);
+        const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+        await store.setDueDate(filteredIdx, date);
         render();
       }
       state.mode = 'NORMAL';
@@ -173,7 +183,8 @@ function handleNormalMode(e: KeyboardEvent) {
     e.preventDefault();
     showPrompt('Project name: ', async (name) => {
       if (name) {
-        await store.addProject(state.cursor, name);
+        const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+        await store.addProject(filteredIdx, name);
         render();
       }
       state.mode = 'NORMAL';
@@ -186,7 +197,8 @@ function handleNormalMode(e: KeyboardEvent) {
     e.preventDefault();
     showPrompt('Context name: ', async (name) => {
       if (name) {
-        await store.addContext(state.cursor, name);
+        const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+        await store.addContext(filteredIdx, name);
         render();
       }
       state.mode = 'NORMAL';
@@ -262,6 +274,24 @@ function exitInsert() {
 async function handleCommand(cmd: string) {
   const parts = cmd.trim().split(/\s+/);
   const command = parts[0];
+
+  if (command.startsWith('s')) {
+    // Sort command: :s, :sp, :s@, :s+, :sD
+    const sortArg = command.slice(1);
+    if (sortArg === '') {
+      store.setSortMode('none');
+    } else if (sortArg === 'p') {
+      store.setSortMode('priority');
+    } else if (sortArg === '@') {
+      store.setSortMode('context');
+    } else if (sortArg === '+') {
+      store.setSortMode('project');
+    } else if (sortArg === 'D') {
+      store.setSortMode('duedate');
+    }
+    render();
+    return;
+  }
 
   switch (command) {
     case 'w':

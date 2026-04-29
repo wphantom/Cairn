@@ -48,6 +48,11 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 - `:w` - Save tasks
 - `:q` - Quit app
 - `:wq` - Save and quit
+- `:s` - Revert to original order (from file)
+- `:sp` - Sort by priority (A first)
+- `:s@` - Sort by context name (alphabetical)
+- `:s+` - Sort by project name (alphabetical)
+- `:sD` - Sort by due date (nearest first)
 - `:filter [expr]` - Filter tasks (e.g., `:filter +project`)
 - `:clear` - Clear filter
 - `:sort` - Sort by priority then date

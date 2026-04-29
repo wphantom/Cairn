@@ -12,6 +12,7 @@ export const state = {
   search: '',
   buffer: '',
   bufferTimer: null as number | null,
+  sortMode: 'none' as 'none' | 'priority' | 'context' | 'project' | 'duedate',
 };
 
 export async function initStore() {
@@ -219,4 +220,51 @@ export async function archiveDone() {
     await loadTasks();
   }
   return count;
+}
+
+export function setSortMode(mode: 'none' | 'priority' | 'context' | 'project' | 'duedate') {
+  state.sortMode = mode;
+}
+
+export function getSortedTasks(): Task[] {
+  let sorted = [...state.filteredTasks];
+
+  if (state.sortMode === 'none') {
+    return sorted;
+  }
+
+  if (state.sortMode === 'priority') {
+    sorted.sort((a, b) => {
+      const aPrio = a.priority || 'Z';
+      const bPrio = b.priority || 'Z';
+      return aPrio.localeCompare(bPrio);
+    });
+  } else if (state.sortMode === 'context') {
+    sorted.sort((a, b) => {
+      const aCtx = a.contexts[0] || '';
+      const bCtx = b.contexts[0] || '';
+      return aCtx.localeCompare(bCtx);
+    });
+  } else if (state.sortMode === 'project') {
+    sorted.sort((a, b) => {
+      const aProj = a.projects[0] || '';
+      const bProj = b.projects[0] || '';
+      return aProj.localeCompare(bProj);
+    });
+  } else if (state.sortMode === 'duedate') {
+    sorted.sort((a, b) => {
+      const aDue = a.meta.due || '9999-12-31';
+      const bDue = b.meta.due || '9999-12-31';
+      return aDue.localeCompare(bDue);
+    });
+  }
+
+  return sorted;
+}
+
+export function getFilteredIndexFromSortedCursor(sortedIdx: number): number {
+  const sorted = getSortedTasks();
+  if (sortedIdx < 0 || sortedIdx >= sorted.length) return sortedIdx;
+  const task = sorted[sortedIdx];
+  return state.filteredTasks.indexOf(task);
 }
