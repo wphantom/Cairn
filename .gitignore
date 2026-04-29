@@ -1,0 +1,10 @@
+node_modules/
+dist/
+target/
+.DS_Store
+*.swp
+*.swo
+*~
+.env.local
+.vite/
+src-tauri/gen/

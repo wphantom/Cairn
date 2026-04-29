@@ -1,0 +1,330 @@
+import { state } from './store';
+import * as store from './store';
+import { render } from './render';
+import { showPrompt } from './prompt';
+import { api } from './api';
+
+let keyBuffer = '';
+let bufferTimeout: number | null = null;
+
+const BUFFER_TIMEOUT = 800;
+
+export function handleKeydown(e: KeyboardEvent) {
+  if (state.mode === 'INSERT') {
+    handleInsertMode(e);
+  } else if (state.mode === 'COMMAND') {
+    handleCommandMode(e);
+  } else {
+    handleNormalMode(e);
+  }
+}
+
+function handleInsertMode(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    exitInsert();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const input = document.querySelector('input[data-task-edit]') as HTMLInputElement;
+    if (input) {
+      const text = input.value;
+      (async () => {
+        await store.editTask(state.cursor, text);
+        await store.addTaskBelow(state.cursor);
+        state.cursor = state.filteredTasks.length - 1;
+        state.mode = 'INSERT';
+        render();
+        setTimeout(() => {
+          const newInput = document.querySelector('input[data-task-edit]') as HTMLInputElement;
+          if (newInput) newInput.focus();
+        }, 0);
+      })();
+    }
+  }
+}
+
+function handleCommandMode(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    state.mode = 'NORMAL';
+    render();
+  } else if (e.key === 'Enter') {
+    // Handled by prompt - just prevent default
+    e.preventDefault();
+  } else if (e.key === 'Backspace') {
+    // Handled by prompt
+    e.preventDefault();
+  }
+  // All other input is handled by prompt input field, not here
+}
+
+function handleNormalMode(e: KeyboardEvent) {
+  const key = e.key;
+
+  if (e.metaKey && !e.ctrlKey && !e.altKey) {
+    return;
+  }
+
+  if (e.ctrlKey) {
+    return;
+  }
+
+  keyBuffer += key;
+  clearTimeout(bufferTimeout as any);
+
+  let handled = false;
+
+  if (key === 'j' || key === 'ArrowDown') {
+    e.preventDefault();
+    state.cursor = Math.min(state.cursor + 1, state.filteredTasks.length - 1);
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'k' || key === 'ArrowUp') {
+    e.preventDefault();
+    state.cursor = Math.max(state.cursor - 1, 0);
+    keyBuffer = '';
+    handled = true;
+  } else if (keyBuffer === 'gg') {
+    e.preventDefault();
+    state.cursor = 0;
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'G') {
+    e.preventDefault();
+    state.cursor = state.filteredTasks.length - 1;
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'o') {
+    e.preventDefault();
+    (async () => {
+      await store.addTaskBelow(state.cursor);
+      state.cursor = state.filteredTasks.length - 1;
+      state.mode = 'INSERT';
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'O') {
+    e.preventDefault();
+    (async () => {
+      await store.addTaskAbove(state.cursor);
+      state.mode = 'INSERT';
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'i') {
+    e.preventDefault();
+    state.mode = 'INSERT';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'A') {
+    e.preventDefault();
+    state.mode = 'INSERT';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'x') {
+    e.preventDefault();
+    (async () => {
+      await store.toggleDone(state.cursor);
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (keyBuffer === 'dd') {
+    e.preventDefault();
+    (async () => {
+      await store.deleteTask(state.cursor);
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (keyBuffer.match(/^p[a-zA-Z]$/)) {
+    e.preventDefault();
+    const prio = keyBuffer[1].toUpperCase();
+    (async () => {
+      await store.setPriority(state.cursor, prio);
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (keyBuffer === 'pp') {
+    e.preventDefault();
+    (async () => {
+      await store.setPriority(state.cursor, null);
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'D') {
+    e.preventDefault();
+    showPrompt('Due date (YYYY-MM-DD): ', async (date) => {
+      if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        await store.setDueDate(state.cursor, date);
+        render();
+      }
+      state.mode = 'NORMAL';
+      render();
+    });
+    state.mode = 'COMMAND';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === '+') {
+    e.preventDefault();
+    showPrompt('Project name: ', async (name) => {
+      if (name) {
+        await store.addProject(state.cursor, name);
+        render();
+      }
+      state.mode = 'NORMAL';
+      render();
+    });
+    state.mode = 'COMMAND';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === '@') {
+    e.preventDefault();
+    showPrompt('Context name: ', async (name) => {
+      if (name) {
+        await store.addContext(state.cursor, name);
+        render();
+      }
+      state.mode = 'NORMAL';
+      render();
+    });
+    state.mode = 'COMMAND';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === '/') {
+    e.preventDefault();
+    showPrompt('Search: ', (term) => {
+      state.search = term;
+      store.applyFilterAndSearch();
+      state.mode = 'NORMAL';
+      render();
+    });
+    state.mode = 'COMMAND';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === ':') {
+    e.preventDefault();
+    showPrompt(': ', async (cmd) => {
+      await handleCommand(cmd);
+      state.mode = 'NORMAL';
+      render();
+    });
+    state.mode = 'COMMAND';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === '?') {
+    e.preventDefault();
+    const overlay = document.getElementById('help-overlay');
+    if (overlay) {
+      overlay.classList.toggle('hidden');
+    }
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'q') {
+    e.preventDefault();
+    api.hideWindow();
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'Escape') {
+    e.preventDefault();
+    keyBuffer = '';
+    handled = true;
+  } else if (!/^[a-zA-Z0-9!@#$%^&*()_+=\-\[\]{};:'",.<>?/\\|`~]$/.test(key)) {
+    keyBuffer = '';
+  }
+
+  if (handled) {
+    render();
+  }
+
+  bufferTimeout = window.setTimeout(() => {
+    keyBuffer = '';
+  }, BUFFER_TIMEOUT);
+}
+
+function exitInsert() {
+  const input = document.querySelector('input[data-task-edit]') as HTMLInputElement;
+  if (input) {
+    const text = input.value;
+    (async () => {
+      await store.editTask(state.cursor, text);
+      state.mode = 'NORMAL';
+      state.buffer = '';
+      render();
+    })();
+  }
+}
+
+async function handleCommand(cmd: string) {
+  const parts = cmd.trim().split(/\s+/);
+  const command = parts[0];
+
+  switch (command) {
+    case 'w':
+      await store.saveTasks();
+      break;
+    case 'q':
+      api.hideWindow();
+      break;
+    case 'wq':
+      await store.saveTasks();
+      api.hideWindow();
+      break;
+    case 'Q':
+      api.quitApp();
+      break;
+    case 'archive':
+      const count = await store.archiveDone();
+      render();
+      break;
+    case 'sort':
+      state.tasks.sort((a, b) => {
+        if (a.priority && !b.priority) return -1;
+        if (!a.priority && b.priority) return 1;
+        if (a.priority && b.priority) {
+          return a.priority.localeCompare(b.priority);
+        }
+        const aDate = a.creationDate || '9999-12-31';
+        const bDate = b.creationDate || '9999-12-31';
+        if (!a.done && !b.done) return bDate.localeCompare(aDate);
+        if (a.done && !b.done) return 1;
+        if (!a.done && b.done) return -1;
+        return 0;
+      });
+      store.applyFilterAndSearch();
+      await store.saveTasks();
+      render();
+      break;
+    case 'filter':
+      const expr = parts.slice(1).join(' ');
+      await store.applyFilter(expr);
+      render();
+      break;
+    case 'clear':
+      store.clearFilter();
+      render();
+      break;
+    case 'open':
+      api.openInFinder(state.filePath);
+      break;
+    case 'help':
+    case '?':
+      const overlay = document.getElementById('help-overlay');
+      if (overlay) {
+        overlay.classList.toggle('hidden');
+      }
+      break;
+    case 'set':
+      if (parts[1] === 'file') {
+        const newPath = parts.slice(2).join(' ');
+        state.filePath = newPath;
+        await store.loadTasks();
+        render();
+      }
+      break;
+  }
+}

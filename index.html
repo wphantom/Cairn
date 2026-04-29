@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cairn</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="header" data-tauri-drag-region>
+        <span class="title">Cairn</span>
+        <span class="filter-indicator"></span>
+      </div>
+      <ul id="list"></ul>
+      <div class="statusline">
+        <span class="mode">NORMAL</span>
+        <span class="status"></span>
+        <span class="count">0/0</span>
+      </div>
+      <div id="help-overlay" class="help-overlay hidden">
+        <div class="help-content">
+          <h2>Help</h2>
+          <table>
+            <tr><td>j/↓</td><td>Move down</td></tr>
+            <tr><td>k/↑</td><td>Move up</td></tr>
+            <tr><td>gg</td><td>Top</td></tr>
+            <tr><td>G</td><td>Bottom</td></tr>
+            <tr><td>o</td><td>New task below</td></tr>
+            <tr><td>O</td><td>New task above</td></tr>
+            <tr><td>i</td><td>Edit at start</td></tr>
+            <tr><td>A</td><td>Edit at end</td></tr>
+            <tr><td>x</td><td>Toggle done</td></tr>
+            <tr><td>dd</td><td>Delete</td></tr>
+            <tr><td>pA-pZ</td><td>Set priority</td></tr>
+            <tr><td>pp</td><td>Remove priority</td></tr>
+            <tr><td>D</td><td>Set due date</td></tr>
+            <tr><td>+</td><td>Add project</td></tr>
+            <tr><td>@</td><td>Add context</td></tr>
+            <tr><td>/</td><td>Search</td></tr>
+            <tr><td>:</td><td>Command</td></tr>
+            <tr><td>q</td><td>Hide window</td></tr>
+            <tr><td>?</td><td>Toggle help</td></tr>
+            <tr><td>Esc</td><td>Cancel</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
