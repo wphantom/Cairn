@@ -40,8 +40,14 @@ async function main() {
       return;
     }
     
-    // Skip vim handling if input is focused or in COMMAND mode (unless in active search)
-    if (document.activeElement?.tagName === 'INPUT' && document.activeElement?.className !== 'prompt-input') {
+    // If task-edit input is focused, let it handle the event
+    const activeEl = document.activeElement as HTMLElement;
+    if (activeEl?.className === 'task-edit') {
+      return;
+    }
+    
+    // Skip vim handling if other input is focused or in COMMAND mode (unless in active search)
+    if (activeEl?.tagName === 'INPUT') {
       return;
     }
     if (state.mode === 'COMMAND' && !state.searchActive) {

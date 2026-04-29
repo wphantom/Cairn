@@ -1,6 +1,12 @@
 import { state } from './store';
 import * as store from './store';
 
+function handleInputEscape() {
+  state.mode = 'NORMAL';
+  state.buffer = '';
+  render();
+}
+
 export function render() {
   const list = document.getElementById('list');
   if (!list) return;
@@ -18,6 +24,34 @@ export function render() {
       input.value = task.raw || '';
       input.dataset.taskEdit = 'true';
       input.className = 'task-edit';
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          const text = input.value;
+          state.mode = 'NORMAL';
+          state.buffer = '';
+          (async () => {
+            const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+            await store.editTask(filteredIdx, text);
+            render();
+          })();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const text = input.value;
+          (async () => {
+            const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+            await store.editTask(filteredIdx, text);
+            await store.addTaskBelow(filteredIdx);
+            state.cursor = store.getSortedTasks().length - 1;
+            state.mode = 'INSERT';
+            render();
+            setTimeout(() => {
+              const newInput = document.querySelector('input[data-task-edit]') as HTMLInputElement;
+              if (newInput) newInput.focus();
+            }, 0);
+          })();
+        }
+      });
       li.appendChild(input);
       setTimeout(() => input.focus(), 0);
     } else {
@@ -49,6 +83,14 @@ export function render() {
 
   updateStatusLine();
   updateFilterIndicator();
+  
+  // Force Tauri webview to repaint by toggling visibility
+  const style = document.documentElement.style;
+  const orig = style.opacity;
+  style.opacity = '0.99';
+  requestAnimationFrame(() => {
+    style.opacity = orig || '1';
+  });
 }
 
 function formatTaskHTML(task: any): string {

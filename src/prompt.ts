@@ -58,21 +58,12 @@ export function showPrompt(
       e.preventDefault();
       const val = input.value;
       container.remove();
-      // Restore status span
-      const status = document.createElement('span');
-      status.className = 'status';
-      status.textContent = val ? `/ ${val}` : '';
-      if (statusline) statusline.appendChild(status);
       state.searchActive = false;
       await callback(val);
       promptInput = null;
     } else if (e.key === 'Escape') {
       e.preventDefault();
       container.remove();
-      // Restore status span
-      const status = document.createElement('span');
-      status.className = 'status';
-      if (statusline) statusline.appendChild(status);
       promptInput = null;
       state.searchActive = false;
       state.search = '';

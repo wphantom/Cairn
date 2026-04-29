@@ -11,36 +11,12 @@ const BUFFER_TIMEOUT = 800;
 
 export function handleKeydown(e: KeyboardEvent) {
   if (state.mode === 'INSERT') {
-    handleInsertMode(e);
+    // Input element handles Escape/Enter, don't process here
+    return;
   } else if (state.mode === 'COMMAND') {
     handleCommandMode(e);
   } else {
     handleNormalMode(e);
-  }
-}
-
-function handleInsertMode(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    exitInsert();
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    const input = document.querySelector('input[data-task-edit]') as HTMLInputElement;
-    if (input) {
-      const text = input.value;
-      (async () => {
-        const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
-        await store.editTask(filteredIdx, text);
-        await store.addTaskBelow(filteredIdx);
-        state.cursor = store.getSortedTasks().length - 1;
-        state.mode = 'INSERT';
-        render();
-        setTimeout(() => {
-          const newInput = document.querySelector('input[data-task-edit]') as HTMLInputElement;
-          if (newInput) newInput.focus();
-        }, 0);
-      })();
-    }
   }
 }
 

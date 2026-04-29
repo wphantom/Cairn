@@ -220,6 +220,10 @@ export async function setDueDate(idx: number, date: string) {
   regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
+  // Regenerate task.raw
+  const serialized = serializeTask(task);
+  const reparsed = parse(serialized)[0];
+  task.raw = reparsed.raw;
 }
 
 export async function addProject(idx: number, name: string) {
@@ -227,10 +231,18 @@ export async function addProject(idx: number, name: string) {
   const task = state.tasks[origIdx];
   if (!task.projects.includes(name)) {
     task.projects.push(name);
+    const proj = `+${name}`;
+    if (!task.description.includes(proj)) {
+      task.description += ` ${proj}`;
+    }
   }
   regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
+  // Regenerate task.raw
+  const serialized = serializeTask(task);
+  const reparsed = parse(serialized)[0];
+  task.raw = reparsed.raw;
 }
 
 export async function addContext(idx: number, name: string) {
@@ -238,10 +250,73 @@ export async function addContext(idx: number, name: string) {
   const task = state.tasks[origIdx];
   if (!task.contexts.includes(name)) {
     task.contexts.push(name);
+    const ctx = `@${name}`;
+    if (!task.description.includes(ctx)) {
+      task.description += ` ${ctx}`;
+    }
   }
   regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
+  // Regenerate task.raw from serialized form
+  const serialized = serializeTask(task);
+  const reparsed = parse(serialized)[0];
+  task.raw = reparsed.raw;
+}
+
+function serializeTask(task: Task): string {
+  if (task.done) {
+    let line = 'x';
+    if (task.completionDate) line += ` ${task.completionDate}`;
+    if (task.creationDate) line += ` ${task.creationDate}`;
+    line += ` ${task.description}`;
+
+    for (const [key, val] of Object.entries(task.meta)) {
+      if (key !== 'pri') {
+        line += ` ${key}:${val}`;
+      }
+    }
+
+    if (task.priority) {
+      line += ` pri:${task.priority}`;
+    }
+
+    for (const proj of task.projects) {
+      if (!line.includes(`+${proj}`)) line += ` +${proj}`;
+    }
+
+    for (const ctx of task.contexts) {
+      if (!line.includes(`@${ctx}`)) line += ` @${ctx}`;
+    }
+
+    return line.trim();
+  } else {
+    let line = '';
+    if (task.priority) line += `(${task.priority}) `;
+    if (task.creationDate) line += `${task.creationDate} `;
+
+    line += task.description;
+
+    for (const proj of task.projects) {
+      if (!line.includes(`+${proj}`)) line += ` +${proj}`;
+    }
+
+    for (const ctx of task.contexts) {
+      if (!line.includes(`@${ctx}`)) line += ` @${ctx}`;
+    }
+
+    for (const [key, val] of Object.entries(task.meta)) {
+      if (key !== 'pri' && key !== 'due') {
+        if (!line.includes(`${key}:${val}`)) line += ` ${key}:${val}`;
+      }
+    }
+
+    if (task.meta.due) {
+      if (!line.includes(`due:${task.meta.due}`)) line += ` due:${task.meta.due}`;
+    }
+
+    return line.trim();
+  }
 }
 
 export async function applyFilter(expr: string) {
