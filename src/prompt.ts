@@ -6,7 +6,8 @@ let promptInput: HTMLInputElement | null = null;
 
 export function showPrompt(
   prompt: string,
-  callback: (result: string) => void | Promise<void>
+  callback: (result: string) => void | Promise<void>,
+  liveCallback?: (result: string) => void
 ) {
   const statusline = document.querySelector('.statusline');
   if (!statusline) return;
@@ -27,6 +28,12 @@ export function showPrompt(
   input.autoFocus = true;
 
   promptInput = input;
+
+  input.addEventListener('input', (e) => {
+    if (liveCallback) {
+      liveCallback(input.value);
+    }
+  });
 
   input.addEventListener('keydown', async (e) => {
     e.stopPropagation();

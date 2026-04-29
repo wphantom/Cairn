@@ -209,12 +209,22 @@ function handleNormalMode(e: KeyboardEvent) {
     handled = true;
   } else if (key === '/') {
     e.preventDefault();
-    showPrompt('Search: ', (term) => {
-      state.search = term;
-      store.applyFilterAndSearch();
-      state.mode = 'NORMAL';
-      render();
-    });
+    showPrompt(
+      'Search: ',
+      (term) => {
+        state.search = term;
+        store.applyFilterAndSearch();
+        state.mode = 'NORMAL';
+        state.cursor = 0;
+        render();
+      },
+      (term) => {
+        state.search = term;
+        store.applyFilterAndSearch();
+        state.cursor = 0;
+        render();
+      }
+    );
     state.mode = 'COMMAND';
     keyBuffer = '';
     handled = true;
