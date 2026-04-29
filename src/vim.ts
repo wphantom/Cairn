@@ -178,10 +178,10 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === 'D') {
     e.preventDefault();
     showPrompt('Due date (YYYY-MM-DD): ', async (date) => {
+      state.searchActive = false;
       if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
         const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
         await store.setDueDate(filteredIdx, date);
-        render();
       }
       state.mode = 'NORMAL';
       render();
@@ -192,10 +192,10 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === '+') {
     e.preventDefault();
     showPrompt('Project name: ', async (name) => {
+      state.searchActive = false;
       if (name) {
         const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
         await store.addProject(filteredIdx, name);
-        render();
       }
       state.mode = 'NORMAL';
       render();
@@ -206,10 +206,10 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === '@') {
     e.preventDefault();
     showPrompt('Context name: ', async (name) => {
+      state.searchActive = false;
       if (name) {
         const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
         await store.addContext(filteredIdx, name);
-        render();
       }
       state.mode = 'NORMAL';
       render();
