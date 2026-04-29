@@ -1,5 +1,6 @@
 import { render } from './render';
 import { state } from './store';
+import * as store from './store';
 
 let promptResolve: ((val: string) => void) | null = null;
 let promptInput: HTMLInputElement | null = null;
@@ -37,6 +38,22 @@ export function showPrompt(
 
   input.addEventListener('keydown', async (e) => {
     e.stopPropagation();
+    
+    // Allow j/k for navigation during live search
+    if (liveCallback && (e.key === 'j' || e.key === 'k' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      const sortedTasks = store.getSortedTasks();
+      const maxCursor = sortedTasks.length - 1;
+      
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        state.cursor = Math.min(state.cursor + 1, maxCursor);
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        state.cursor = Math.max(state.cursor - 1, 0);
+      }
+      render();
+      return;
+    }
+    
     if (e.key === 'Enter') {
       e.preventDefault();
       const val = input.value;
@@ -45,6 +62,7 @@ export function showPrompt(
       const status = document.createElement('span');
       status.className = 'status';
       if (statusline) statusline.appendChild(status);
+      state.searchActive = false;
       await callback(val);
       promptInput = null;
     } else if (e.key === 'Escape') {
@@ -55,6 +73,10 @@ export function showPrompt(
       status.className = 'status';
       if (statusline) statusline.appendChild(status);
       promptInput = null;
+      state.searchActive = false;
+      state.search = '';
+      state.cursor = 0;
+      store.applyFilterAndSearch();
       state.mode = 'NORMAL';
       render();
     }

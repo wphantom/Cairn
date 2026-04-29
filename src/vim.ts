@@ -70,6 +70,16 @@ function handleNormalMode(e: KeyboardEvent) {
     return;
   }
 
+  // In search mode, skip navigation only (j/k handled by prompt)
+  if (state.searchActive && (key === 'j' || key === 'k' || key === 'ArrowDown' || key === 'ArrowUp')) {
+    return;
+  }
+
+  // Any other vim action during search exits search mode
+  if (state.searchActive) {
+    exitSearch();
+  }
+
   keyBuffer += key;
   clearTimeout(bufferTimeout as any);
 
@@ -209,6 +219,8 @@ function handleNormalMode(e: KeyboardEvent) {
     handled = true;
   } else if (key === '/') {
     e.preventDefault();
+    state.searchActive = true;
+    state.cursor = 0;
     showPrompt(
       'Search: ',
       (term) => {
@@ -278,6 +290,20 @@ function exitInsert() {
       state.buffer = '';
       render();
     })();
+  }
+}
+
+function exitSearch() {
+  state.searchActive = false;
+  state.mode = 'NORMAL';
+  // Keep search active for filtering but remove prompt
+  const promptContainer = document.querySelector('.prompt-container');
+  if (promptContainer) {
+    promptContainer.remove();
+    const statusline = document.querySelector('.statusline');
+    const status = document.createElement('span');
+    status.className = 'status';
+    if (statusline) statusline.appendChild(status);
   }
 }
 

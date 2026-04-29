@@ -40,8 +40,11 @@ async function main() {
       return;
     }
     
-    // Skip vim handling if input is focused or in COMMAND mode
-    if (document.activeElement?.tagName === 'INPUT' || state.mode === 'COMMAND') {
+    // Skip vim handling if input is focused or in COMMAND mode (unless in active search)
+    if (document.activeElement?.tagName === 'INPUT' && document.activeElement?.className !== 'prompt-input') {
+      return;
+    }
+    if (state.mode === 'COMMAND' && !state.searchActive) {
       return;
     }
     handleKeydown(e);

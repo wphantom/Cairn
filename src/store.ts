@@ -10,6 +10,7 @@ export const state = {
   mode: 'NORMAL' as Mode,
   filter: null as Filter | null,
   search: '',
+  searchActive: false,
   buffer: '',
   bufferTimer: null as number | null,
   sortMode: 'none' as 'none' | 'priority' | 'context' | 'project' | 'duedate',
