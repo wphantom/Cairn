@@ -285,11 +285,15 @@ function exitInsert() {
   if (input) {
     const text = input.value;
     (async () => {
-      await store.editTask(state.cursor, text);
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.editTask(filteredIdx, text);
       state.mode = 'NORMAL';
       state.buffer = '';
       render();
     })();
+  } else {
+    state.mode = 'NORMAL';
+    render();
   }
 }
 

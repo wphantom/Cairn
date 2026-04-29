@@ -163,10 +163,61 @@ export async function setPriority(idx: number, prio: string | null) {
   await saveTasks();
 }
 
+function regenerateTaskRaw(task: Task) {
+  // Rebuild task.raw and task.description from task object fields
+  let raw = '';
+  if (task.done) {
+    raw = 'x';
+    if (task.completionDate) raw += ` ${task.completionDate}`;
+    if (task.creationDate) raw += ` ${task.creationDate}`;
+  } else {
+    if (task.priority) raw += `(${task.priority}) `;
+    if (task.creationDate) raw += `${task.creationDate} `;
+  }
+  
+  raw += task.description;
+  
+  for (const proj of task.projects) {
+    if (!raw.includes(`+${proj}`)) raw += ` +${proj}`;
+  }
+  for (const ctx of task.contexts) {
+    if (!raw.includes(`@${ctx}`)) raw += ` @${ctx}`;
+  }
+  for (const [key, val] of Object.entries(task.meta)) {
+    if (key !== 'pri' && key !== 'due') {
+      if (!raw.includes(`${key}:${val}`)) raw += ` ${key}:${val}`;
+    }
+  }
+  if (task.priority) {
+    if (!raw.includes(`pri:${task.priority}`)) raw += ` pri:${task.priority}`;
+  }
+  if (task.meta.due) {
+    if (!raw.includes(`due:${task.meta.due}`)) raw += ` due:${task.meta.due}`;
+  }
+  
+  task.raw = raw.trim();
+  // Update description to include projects/contexts for rendering
+  task.description = task.description;
+  // Rebuild description by removing metadata but keeping @/+
+  let desc = task.raw;
+  if (task.done) {
+    desc = desc.replace(/^x\s+/, '');
+    if (task.completionDate) desc = desc.replace(/^\d{4}-\d{2}-\d{2}\s+/, '');
+    if (task.creationDate) desc = desc.replace(/^\d{4}-\d{2}-\d{2}\s+/, '');
+  } else {
+    if (task.priority) desc = desc.replace(/^\([A-Z]\)\s+/, '');
+    if (task.creationDate) desc = desc.replace(/^\d{4}-\d{2}-\d{2}\s+/, '');
+  }
+  // Remove non-@ non-+ metadata
+  desc = desc.replace(/\s+[^@+\s]\S*:\S+/g, '').trim();
+  task.description = desc;
+}
+
 export async function setDueDate(idx: number, date: string) {
   const origIdx = state.tasks.indexOf(state.filteredTasks[idx]);
   const task = state.tasks[origIdx];
   task.meta.due = date;
+  regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
 }
@@ -177,6 +228,7 @@ export async function addProject(idx: number, name: string) {
   if (!task.projects.includes(name)) {
     task.projects.push(name);
   }
+  regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
 }
@@ -187,6 +239,7 @@ export async function addContext(idx: number, name: string) {
   if (!task.contexts.includes(name)) {
     task.contexts.push(name);
   }
+  regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
 }
