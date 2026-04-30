@@ -17,6 +17,7 @@ export const state = {
   sortMode: 'none' as 'none' | 'priority' | 'context' | 'project' | 'duedate',
   statusError: null as string | null,
   statusErrorTimer: null as number | null,
+  insertCursorPos: 0,
 };
 
 export async function initStore() {

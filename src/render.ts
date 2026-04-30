@@ -33,6 +33,7 @@ export function render() {
           input.blur();
           state.mode = 'NORMAL';
           state.buffer = '';
+          state.insertCursorPos = 0;
           (async () => {
             const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
             await store.editTask(filteredIdx, text);
@@ -57,7 +58,11 @@ export function render() {
         }
       });
       li.appendChild(input);
-      setTimeout(() => input.focus(), 0);
+      setTimeout(() => {
+        input.focus();
+        const pos = state.insertCursorPos === -1 ? input.value.length : state.insertCursorPos;
+        input.setSelectionRange(pos, pos);
+      }, 0);
     } else {
       const span = document.createElement('span');
       span.className = 'task-text';

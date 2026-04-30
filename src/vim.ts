@@ -38,6 +38,12 @@ function handleCommandMode(e: KeyboardEvent) {
 
 function handleNormalMode(e: KeyboardEvent) {
   const key = e.key;
+  console.log('[KEYDOWN] key:', key, 'keyBuffer before:', keyBuffer, 'shift:', e.shiftKey);
+
+  // Ignore modifier keys
+  if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') {
+    return;
+  }
 
   if (e.metaKey && !e.ctrlKey && !e.altKey) {
     return;
@@ -107,10 +113,12 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === 'i') {
     e.preventDefault();
     state.mode = 'INSERT';
+    state.insertCursorPos = 0;
     keyBuffer = '';
     handled = true;
   } else if (keyBuffer === 'pp') {
     e.preventDefault();
+    console.log('[PRIORITY] pp: removing priority');
     (async () => {
       const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
       await store.setPriority(filteredIdx, null);
@@ -121,6 +129,7 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (keyBuffer.match(/^p[A-Z]$/)) {
     e.preventDefault();
     const prio = keyBuffer[1];
+    console.log('[PRIORITY] Setting priority to:', prio, 'keyBuffer=', keyBuffer);
     (async () => {
       const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
       await store.setPriority(filteredIdx, prio);
@@ -130,7 +139,9 @@ function handleNormalMode(e: KeyboardEvent) {
     handled = true;
   } else if (key === 'A') {
     e.preventDefault();
+    console.log('[INSERT] A key triggered, keyBuffer=', keyBuffer);
     state.mode = 'INSERT';
+    state.insertCursorPos = -1;
     keyBuffer = '';
     handled = true;
   } else if (key === 'x') {
