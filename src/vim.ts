@@ -141,9 +141,9 @@ function handleNormalMode(e: KeyboardEvent) {
     })();
     keyBuffer = '';
     handled = true;
-  } else if (keyBuffer.match(/^p[a-zA-Z]$/)) {
+  } else if (keyBuffer.match(/^p[A-Z]$/)) {
     e.preventDefault();
-    const prio = keyBuffer[1].toUpperCase();
+    const prio = keyBuffer[1];
     (async () => {
       const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
       await store.setPriority(filteredIdx, prio);
