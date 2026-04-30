@@ -132,7 +132,7 @@ pub fn load_config() -> Result<serde_json::Value, String> {
   ];
   
   let mut config_file: Option<String> = None;
-  for path in config_paths {
+  for path in &config_paths {
     if path.exists() {
       config_file = Some(fs::read_to_string(&path).map_err(|e| e.to_string())?);
       break;
@@ -151,17 +151,22 @@ pub fn load_config() -> Result<serde_json::Value, String> {
         continue;
       }
       
-      // Parse todofile setting
-      if trimmed.starts_with("todofile=") {
-        if let Some(value) = trimmed.strip_prefix("todofile=") {
-          let value = value.trim_matches('"').to_string();
-          // Expand tilde
-          let expanded = if value.starts_with('~') {
-            value.replacen('~', home.to_string_lossy().as_ref(), 1)
-          } else {
-            value
-          };
-          todofile = Some(expanded);
+      // Parse todofile setting (handle spaces around =)
+      if trimmed.starts_with("todofile") {
+        // Split by = and handle spaces
+        if let Some(eq_pos) = trimmed.find('=') {
+          let key = trimmed[..eq_pos].trim();
+          if key == "todofile" {
+            let value = trimmed[eq_pos + 1..].trim();
+            let value = value.trim_matches('"').to_string();
+            // Expand tilde
+            let expanded = if value.starts_with('~') {
+              value.replacen('~', home.to_string_lossy().as_ref(), 1)
+            } else {
+              value
+            };
+            todofile = Some(expanded);
+          }
         }
       } else if trimmed.starts_with(':') {
         // Parse command
