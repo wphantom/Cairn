@@ -60,24 +60,55 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
   use tauri::tray::TrayIconBuilder;
   use tauri::image::Image;
 
-  let menu = Menu::new(app)?;
+  println!("[SETUP] Creating tray icon...");
+
+  // Create menu - build items directly with builder pattern
+  let menu = Menu::with_items(
+    app,
+    &[
+      &tauri::menu::MenuItemBuilder::with_id("toggle", "Toggle Window").build(app)?,
+    ],
+  )?;
+
+  println!("[SETUP] Menu created successfully");
 
   // Try to load tray icon from app resources
   let tray_builder = {
     let app_handle = app.handle();
-    let resource_dir = app_handle.path().resource_dir()?;
-    let icon_path = resource_dir.join("icons/tray_icon.png");
     
-    if icon_path.exists() {
-      if let Ok(icon) = Image::from_path(&icon_path) {
+    // Try multiple icon locations
+    let icon_paths = vec![
+      // Release mode (bundled)
+      app_handle.path().resource_dir().ok().map(|p| p.join("icons/tray_icon.png")),
+      // Dev mode (source directory)
+      std::path::PathBuf::from("src-tauri/icons/tray_icon.png").canonicalize().ok(),
+      std::path::PathBuf::from("icons/tray_icon.png").canonicalize().ok(),
+    ];
+    
+    let icon_path = icon_paths.into_iter().find_map(|p| {
+      p.as_ref().and_then(|path| {
+        if path.exists() {
+          println!("[SETUP] Icon found at: {:?}", path);
+          Some(path.clone())
+        } else {
+          None
+        }
+      })
+    });
+    
+    if let Some(path) = icon_path {
+      if let Ok(icon) = Image::from_path(&path) {
+        println!("[SETUP] Icon loaded successfully");
         TrayIconBuilder::new()
           .icon(icon)
           .menu(&menu)
       } else {
+        println!("[SETUP] Failed to load icon image, creating tray without icon");
         TrayIconBuilder::new()
           .menu(&menu)
       }
     } else {
+      println!("[SETUP] Icon file not found at any location, creating tray without icon");
       TrayIconBuilder::new()
         .menu(&menu)
     }
@@ -87,10 +118,12 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     .on_menu_event({
       let handle = app.handle().clone();
       move |_tray_id, event| {
+        println!("[TRAY] Menu event: {:?}", event.id);
         if let Some(w) = handle.get_webview_window("main") {
           match event.id.as_ref() {
             "toggle" => {
               let visible = w.is_visible().unwrap_or(false);
+              println!("[TRAY] Toggle pressed, window visible: {}", visible);
               if visible {
                 let _ = w.hide();
               } else {
@@ -104,6 +137,8 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
       }
     })
     .build(app)?;
+
+  println!("[SETUP] Tray icon created successfully!");
 
   Ok(())
 }
