@@ -82,6 +82,11 @@ export function render() {
       }
     }
 
+    li.addEventListener('click', () => {
+      state.cursor = i;
+      render();
+    });
+
     list.appendChild(li);
   }
 

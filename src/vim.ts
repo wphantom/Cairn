@@ -88,7 +88,6 @@ function handleNormalMode(e: KeyboardEvent) {
     (async () => {
       const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
       await store.addTaskBelow(filteredIdx);
-      state.cursor = store.getSortedTasks().length - 1;
       state.mode = 'INSERT';
       render();
     })();
