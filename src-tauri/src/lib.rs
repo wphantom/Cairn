@@ -46,8 +46,8 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
   // Register global shortcut ⌥⌘T (TODO: Fix handler registration for Tauri 2)
   // let _ = app.global_shortcut().register("alt+cmd+t")?;
 
-  // Setup tray - skip for now
-  // setup_tray(app)?;
+  // Setup tray
+  setup_tray(app)?;
 
   // Start file watcher
   crate::watcher::start_watcher(app.handle().clone());
