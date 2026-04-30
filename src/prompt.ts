@@ -80,6 +80,8 @@ export function showPrompt(
   const statuslineContent = statusline.querySelector('.status');
   if (statuslineContent) {
     statuslineContent.parentNode?.replaceChild(container, statuslineContent);
+  } else {
+    statusline.appendChild(container);
   }
 
   input.focus();

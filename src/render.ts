@@ -100,6 +100,17 @@ export function render() {
   requestAnimationFrame(() => {
     style.opacity = orig || '1';
   });
+
+  // Reapply fontsize scaling after DOM recreation
+  const targetFontSize = (window as any).__TARGET_FONTSIZE || 13;
+  if (targetFontSize !== 13) {
+    const scale = targetFontSize / 13;
+    document.querySelectorAll('*').forEach((el) => {
+      const baseSize = 13;
+      const newSize = baseSize * scale;
+      (el as HTMLElement).style.fontSize = `${newSize}px`;
+    });
+  }
 }
 
 function formatTaskHTML(task: any): string {

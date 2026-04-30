@@ -9,6 +9,35 @@ async function main() {
   await store.initStore();
   render();
 
+  // Restore persisted settings
+  const savedOpacity = localStorage.getItem('cairn:opacity');
+  if (savedOpacity) {
+    const app = document.getElementById('app') as HTMLElement;
+    if (app) app.style.opacity = savedOpacity;
+  }
+
+  const savedFontSize = localStorage.getItem('cairn:fontsize');
+  if (savedFontSize) {
+    const fontSize = parseInt(savedFontSize);
+    (window as any).__TARGET_FONTSIZE = fontSize;
+  }
+
+  const savedBgColor = localStorage.getItem('cairn:bgcolor');
+  if (savedBgColor) {
+    const app = document.getElementById('app') as HTMLElement;
+    if (app) app.style.backgroundColor = savedBgColor;
+  }
+
+  const savedTextColor = localStorage.getItem('cairn:textcolor');
+  if (savedTextColor) {
+    document.documentElement.style.color = savedTextColor;
+  }
+
+  const savedSize = localStorage.getItem('cairn:size');
+  if (savedSize) {
+    // TODO: size restoration disabled pending permission fixes
+  }
+
   // Enable drag on header
   const header = document.querySelector('.header');
   console.log('[DRAG] Header element:', header);

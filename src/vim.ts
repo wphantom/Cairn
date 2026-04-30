@@ -6,6 +6,7 @@ import { api } from './api';
 
 let keyBuffer = '';
 let bufferTimeout: number | null = null;
+let targetFontSize = 13; // Global target fontsize (default 13px)
 
 const BUFFER_TIMEOUT = 800;
 
@@ -218,7 +219,12 @@ function handleNormalMode(e: KeyboardEvent) {
   } else if (key === ':') {
     e.preventDefault();
     showPrompt(': ', async (cmd) => {
-      await handleCommand(cmd);
+      try {
+        await handleCommand(cmd);
+      } catch (err) {
+        console.error('Command error:', err);
+      }
+      state.searchActive = false;
       state.mode = 'NORMAL';
       render();
     });
@@ -290,24 +296,6 @@ async function handleCommand(cmd: string) {
   const parts = cmd.trim().split(/\s+/);
   const command = parts[0];
 
-  if (command.startsWith('s')) {
-    // Sort command: :s, :sp, :s@, :s+, :sD
-    const sortArg = command.slice(1);
-    if (sortArg === '') {
-      store.setSortMode('none');
-    } else if (sortArg === 'p') {
-      store.setSortMode('priority');
-    } else if (sortArg === '@') {
-      store.setSortMode('context');
-    } else if (sortArg === '+') {
-      store.setSortMode('project');
-    } else if (sortArg === 'D') {
-      store.setSortMode('duedate');
-    }
-    render();
-    return;
-  }
-
   switch (command) {
     case 'w':
       await store.saveTasks();
@@ -327,40 +315,66 @@ async function handleCommand(cmd: string) {
       render();
       break;
     case 'sort':
-      state.tasks.sort((a, b) => {
-        if (a.priority && !b.priority) return -1;
-        if (!a.priority && b.priority) return 1;
-        if (a.priority && b.priority) {
-          return a.priority.localeCompare(b.priority);
-        }
-        const aDate = a.creationDate || '9999-12-31';
-        const bDate = b.creationDate || '9999-12-31';
-        if (!a.done && !b.done) return bDate.localeCompare(aDate);
-        if (a.done && !b.done) return 1;
-        if (!a.done && b.done) return -1;
-        return 0;
-      });
-      store.applyFilterAndSearch();
-      await store.saveTasks();
+      // Default sort: none
+      store.setSortMode('none');
       render();
       break;
-    case 'open':
-      api.openInFinder(state.filePath);
-      break;
-    case 'help':
-    case '?':
-      const overlay = document.getElementById('help-overlay');
-      if (overlay) {
-        overlay.classList.toggle('hidden');
+    case 'alpha':
+      const opacity = parseFloat(parts[1]);
+      if (opacity >= 0 && opacity <= 1) {
+        const app = document.getElementById('app') as HTMLElement;
+        if (app) {
+          app.style.opacity = opacity.toString();
+          localStorage.setItem('cairn:opacity', opacity.toString());
+        }
       }
       break;
-    case 'set':
-      if (parts[1] === 'file') {
-        const newPath = parts.slice(2).join(' ');
-        state.filePath = newPath;
-        await store.loadTasks();
+    case 'fontsize':
+      const fontSize = parseInt(parts[1]);
+      if (fontSize > 0) {
+        targetFontSize = fontSize;
+        (window as any).__TARGET_FONTSIZE = fontSize;
+        localStorage.setItem('cairn:fontsize', fontSize.toString());
         render();
       }
       break;
+    case 'bgcolor':
+      const bgColor = parts[1];
+      if (bgColor && bgColor.match(/^#[0-9a-fA-F]{6}$/)) {
+        const app = document.getElementById('app') as HTMLElement;
+        if (app) {
+          app.style.backgroundColor = bgColor;
+          localStorage.setItem('cairn:bgcolor', bgColor);
+        }
+      }
+      break;
+    case 'textcolor':
+      const textColor = parts[1];
+      if (textColor && textColor.match(/^#[0-9a-fA-F]{6}$/)) {
+        document.documentElement.style.color = textColor;
+        localStorage.setItem('cairn:textcolor', textColor);
+      }
+      break;
+    case 'size':
+      // TODO: size command requires Tauri permission flags in Cargo.toml
+      // For now, manual window resize via system
+      break;
+  }
+
+  // Handle sort short commands (s, sp, s@, s+, sD)
+  if (command.startsWith('s') && command !== 'set' && command !== 'size') {
+    const sortArg = command.slice(1);
+    if (sortArg === '') {
+      store.setSortMode('none');
+    } else if (sortArg === 'p') {
+      store.setSortMode('priority');
+    } else if (sortArg === '@') {
+      store.setSortMode('context');
+    } else if (sortArg === '+') {
+      store.setSortMode('project');
+    } else if (sortArg === 'D') {
+      store.setSortMode('duedate');
+    }
+    render();
   }
 }
