@@ -169,7 +169,13 @@ function updateStatusLine() {
     countSpan.textContent = `${visible}/${total}`;
   }
   if (statusSpan) {
-    statusSpan.textContent = state.search ? `/ ${state.search}` : '';
+    if (state.statusError) {
+      statusSpan.textContent = state.statusError;
+      statusSpan.style.color = '#ff6b6b';
+    } else {
+      statusSpan.textContent = state.search ? `/ ${state.search}` : '';
+      statusSpan.style.color = '';
+    }
   }
 }
 

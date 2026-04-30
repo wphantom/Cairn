@@ -292,7 +292,7 @@ function exitSearch() {
   }
 }
 
-async function handleCommand(cmd: string) {
+export async function handleCommand(cmd: string) {
   const parts = cmd.trim().split(/\s+/);
   const command = parts[0];
 

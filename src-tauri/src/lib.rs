@@ -19,6 +19,7 @@ pub fn run() {
       crate::commands::show_window,
       crate::commands::toggle_window,
       crate::commands::quit_app,
+      crate::commands::load_config,
     ]);
 
   builder

@@ -2,40 +2,69 @@ import { state } from './store';
 import * as store from './store';
 import { render } from './render';
 import { handleKeydown } from './vim';
+import { handleCommand } from './vim';
 import { api, setupEventListeners } from './api';
 import { parse } from './parser';
 
 async function main() {
-  await store.initStore();
-  render();
+  // Load config file first
+  try {
+    const config = await api.loadConfig();
+    
+    // Determine which todo file to load
+    if (config.todofile) {
+      state.filePath = config.todofile;
+    } else {
+      const defaultPath = await api.getDefaultPath();
+      state.filePath = defaultPath;
+    }
+    
+    // Load tasks
+    await store.loadTasks();
+    render();
+    
+    // Restore persisted settings
+    const savedOpacity = localStorage.getItem('cairn:opacity');
+    if (savedOpacity) {
+      const app = document.getElementById('app') as HTMLElement;
+      if (app) app.style.opacity = savedOpacity;
+    }
 
-  // Restore persisted settings
-  const savedOpacity = localStorage.getItem('cairn:opacity');
-  if (savedOpacity) {
-    const app = document.getElementById('app') as HTMLElement;
-    if (app) app.style.opacity = savedOpacity;
-  }
+    const savedFontSize = localStorage.getItem('cairn:fontsize');
+    if (savedFontSize) {
+      const fontSize = parseInt(savedFontSize);
+      (window as any).__TARGET_FONTSIZE = fontSize;
+    }
 
-  const savedFontSize = localStorage.getItem('cairn:fontsize');
-  if (savedFontSize) {
-    const fontSize = parseInt(savedFontSize);
-    (window as any).__TARGET_FONTSIZE = fontSize;
-  }
+    const savedBgColor = localStorage.getItem('cairn:bgcolor');
+    if (savedBgColor) {
+      const app = document.getElementById('app') as HTMLElement;
+      if (app) app.style.backgroundColor = savedBgColor;
+    }
 
-  const savedBgColor = localStorage.getItem('cairn:bgcolor');
-  if (savedBgColor) {
-    const app = document.getElementById('app') as HTMLElement;
-    if (app) app.style.backgroundColor = savedBgColor;
-  }
+    const savedTextColor = localStorage.getItem('cairn:textcolor');
+    if (savedTextColor) {
+      document.documentElement.style.color = savedTextColor;
+    }
 
-  const savedTextColor = localStorage.getItem('cairn:textcolor');
-  if (savedTextColor) {
-    document.documentElement.style.color = savedTextColor;
-  }
-
-  const savedSize = localStorage.getItem('cairn:size');
-  if (savedSize) {
-    // TODO: size restoration disabled pending permission fixes
+    const savedSize = localStorage.getItem('cairn:size');
+    if (savedSize) {
+      // TODO: size restoration disabled pending permission fixes
+    }
+    
+    // Execute config commands
+    for (const cmd of config.commands) {
+      try {
+        await handleCommand(cmd.slice(1)); // Remove leading ':'
+        render();
+      } catch (e) {
+        store.setStatusError(`Command error: ${cmd}`);
+        console.error('Config command error:', cmd, e);
+      }
+    }
+    
+  } catch (e) {
+    console.error('Config loading error:', e);
   }
 
   // Enable drag on header

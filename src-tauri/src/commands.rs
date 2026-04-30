@@ -120,3 +120,59 @@ pub fn quit_app(app: tauri::AppHandle) -> Result<(), String> {
   app.exit(0);
   Ok(())
 }
+
+#[tauri::command]
+pub fn load_config() -> Result<serde_json::Value, String> {
+  let home = dirs::home_dir().ok_or("Could not find home directory")?;
+  
+  let config_paths = vec![
+    home.join(".cairn.conf"),
+    home.join(".config/cairn.conf"),
+    home.join(".config/cairn/cairn.conf"),
+  ];
+  
+  let mut config_file: Option<String> = None;
+  for path in config_paths {
+    if path.exists() {
+      config_file = Some(fs::read_to_string(&path).map_err(|e| e.to_string())?);
+      break;
+    }
+  }
+  
+  let mut todofile: Option<String> = None;
+  let mut commands: Vec<String> = Vec::new();
+  
+  if let Some(content) = config_file {
+    for line in content.lines() {
+      let trimmed = line.trim();
+      
+      // Skip empty lines and comments
+      if trimmed.is_empty() || trimmed.starts_with('#') {
+        continue;
+      }
+      
+      // Parse todofile setting
+      if trimmed.starts_with("todofile=") {
+        if let Some(value) = trimmed.strip_prefix("todofile=") {
+          let value = value.trim_matches('"').to_string();
+          // Expand tilde
+          let expanded = if value.starts_with('~') {
+            value.replacen('~', home.to_string_lossy().as_ref(), 1)
+          } else {
+            value
+          };
+          todofile = Some(expanded);
+        }
+      } else if trimmed.starts_with(':') {
+        // Parse command
+        commands.push(trimmed.to_string());
+      }
+    }
+  }
+  
+  Ok(serde_json::json!({
+    "todofile": todofile,
+    "commands": commands
+  }))
+}
+

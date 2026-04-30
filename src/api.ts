@@ -11,6 +11,7 @@ export const api = {
   showWindow: () => invoke<void>('show_window'),
   toggleWindow: () => invoke<void>('toggle_window'),
   quitApp: () => invoke<void>('quit_app'),
+  loadConfig: () => invoke<{ todofile: string | null; commands: string[] }>('load_config'),
 };
 
 export async function setupEventListeners(

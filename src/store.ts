@@ -15,6 +15,8 @@ export const state = {
   buffer: '',
   bufferTimer: null as number | null,
   sortMode: 'none' as 'none' | 'priority' | 'context' | 'project' | 'duedate',
+  statusError: null as string | null,
+  statusErrorTimer: null as number | null,
 };
 
 export async function initStore() {
@@ -401,4 +403,15 @@ export function getFilteredIndexFromSortedCursor(sortedIdx: number): number {
   if (sortedIdx < 0 || sortedIdx >= sorted.length) return sortedIdx;
   const task = sorted[sortedIdx];
   return state.filteredTasks.indexOf(task);
+}
+
+export function setStatusError(message: string) {
+  state.statusError = message;
+  if (state.statusErrorTimer) clearTimeout(state.statusErrorTimer);
+  state.statusErrorTimer = window.setTimeout(() => {
+    state.statusError = null;
+    state.statusErrorTimer = null;
+    render();
+  }, 5000);
+  render();
 }
