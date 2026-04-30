@@ -109,29 +109,6 @@ function handleNormalMode(e: KeyboardEvent) {
     state.mode = 'INSERT';
     keyBuffer = '';
     handled = true;
-  } else if (key === 'A' && keyBuffer !== 'p') {
-    e.preventDefault();
-    state.mode = 'INSERT';
-    keyBuffer = '';
-    handled = true;
-  } else if (key === 'x') {
-    e.preventDefault();
-    (async () => {
-      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
-      await store.toggleDone(filteredIdx);
-      render();
-    })();
-    keyBuffer = '';
-    handled = true;
-  } else if (keyBuffer === 'dd') {
-    e.preventDefault();
-    (async () => {
-      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
-      await store.deleteTask(filteredIdx);
-      render();
-    })();
-    keyBuffer = '';
-    handled = true;
   } else if (keyBuffer === 'pp') {
     e.preventDefault();
     (async () => {
@@ -151,6 +128,12 @@ function handleNormalMode(e: KeyboardEvent) {
     })();
     keyBuffer = '';
     handled = true;
+  } else if (key === 'A') {
+    e.preventDefault();
+    state.mode = 'INSERT';
+    keyBuffer = '';
+    handled = true;
+  } else if (key === 'x') {
   } else if (key === 'D') {
     e.preventDefault();
     showPrompt('Due date (YYYY-MM-DD): ', async (date) => {
