@@ -160,8 +160,10 @@ export async function setPriority(idx: number, prio: string | null) {
     delete task.meta.pri;
   } else {
     task.priority = prio.toUpperCase() as any;
+    task.meta.pri = prio.toUpperCase();
   }
 
+  regenerateTaskRaw(task);
   applyFilterAndSearch();
   await saveTasks();
 }
