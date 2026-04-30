@@ -157,10 +157,8 @@ export async function setPriority(idx: number, prio: string | null) {
 
   if (prio === null) {
     task.priority = null;
-    delete task.meta.pri;
   } else {
     task.priority = prio.toUpperCase() as any;
-    task.meta.pri = prio.toUpperCase();
   }
 
   regenerateTaskRaw(task);

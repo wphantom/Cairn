@@ -132,21 +132,21 @@ function handleNormalMode(e: KeyboardEvent) {
     })();
     keyBuffer = '';
     handled = true;
+  } else if (keyBuffer === 'pp') {
+    e.preventDefault();
+    (async () => {
+      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
+      await store.setPriority(filteredIdx, null);
+      render();
+    })();
+    keyBuffer = '';
+    handled = true;
   } else if (keyBuffer.match(/^p[a-zA-Z]$/)) {
     e.preventDefault();
     const prio = keyBuffer[1].toUpperCase();
     (async () => {
       const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
       await store.setPriority(filteredIdx, prio);
-      render();
-    })();
-    keyBuffer = '';
-    handled = true;
-  } else if (keyBuffer === 'pp') {
-    e.preventDefault();
-    (async () => {
-      const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
-      await store.setPriority(filteredIdx, null);
       render();
     })();
     keyBuffer = '';
