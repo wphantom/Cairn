@@ -1,6 +1,7 @@
 import { Task, Mode, Filter } from './types';
 import { parse, serialize } from './parser';
 import { api } from './api';
+import { render } from './render';
 
 export const state = {
   filePath: '~/todo.txt',
@@ -243,6 +244,8 @@ export async function addProject(idx: number, name: string) {
   const serialized = serializeTask(task);
   const reparsed = parse(serialized)[0];
   task.raw = reparsed.raw;
+  // Force immediate render before returning
+  render();
 }
 
 export async function addContext(idx: number, name: string) {
@@ -262,6 +265,8 @@ export async function addContext(idx: number, name: string) {
   const serialized = serializeTask(task);
   const reparsed = parse(serialized)[0];
   task.raw = reparsed.raw;
+  // Force immediate render before returning
+  render();
 }
 
 function serializeTask(task: Task): string {

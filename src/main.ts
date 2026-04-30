@@ -40,7 +40,7 @@ async function main() {
       return;
     }
     
-    // If task-edit input is focused, let it handle the event
+    // Skip vim handling if task-edit input is focused (it handles its own keydown)
     const activeEl = document.activeElement as HTMLElement;
     if (activeEl?.className === 'task-edit') {
       return;
@@ -54,7 +54,7 @@ async function main() {
       return;
     }
     handleKeydown(e);
-  });
+  }, true); // true = capture phase to intercept before input element
 
   await setupEventListeners(
     (content) => {

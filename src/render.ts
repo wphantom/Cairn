@@ -25,9 +25,12 @@ export function render() {
       input.dataset.taskEdit = 'true';
       input.className = 'task-edit';
       input.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        
         if (e.key === 'Escape') {
           e.preventDefault();
           const text = input.value;
+          input.blur();
           state.mode = 'NORMAL';
           state.buffer = '';
           (async () => {
@@ -38,6 +41,7 @@ export function render() {
         } else if (e.key === 'Enter') {
           e.preventDefault();
           const text = input.value;
+          input.blur();
           (async () => {
             const filteredIdx = store.getFilteredIndexFromSortedCursor(state.cursor);
             await store.editTask(filteredIdx, text);
