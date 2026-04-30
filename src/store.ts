@@ -157,8 +157,10 @@ export async function setPriority(idx: number, prio: string | null) {
 
   if (prio === null) {
     task.priority = null;
+    delete task.meta.pri;
   } else {
     task.priority = prio.toUpperCase() as any;
+    delete task.meta.pri;
   }
 
   regenerateTaskRaw(task);
@@ -190,9 +192,6 @@ function regenerateTaskRaw(task: Task) {
     if (key !== 'pri' && key !== 'due') {
       if (!raw.includes(`${key}:${val}`)) raw += ` ${key}:${val}`;
     }
-  }
-  if (task.priority) {
-    if (!raw.includes(`pri:${task.priority}`)) raw += ` pri:${task.priority}`;
   }
   if (task.meta.due) {
     if (!raw.includes(`due:${task.meta.due}`)) raw += ` due:${task.meta.due}`;
