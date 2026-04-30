@@ -60,6 +60,8 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
   use tauri::tray::TrayIconBuilder;
   use tauri::image::Image;
 
+  eprintln!("[TRAY] Setting up tray icon...");
+
   // Create menu with toggle option
   let menu = Menu::with_items(
     app,
@@ -73,15 +75,22 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let app_handle = app.handle();
     
     // Try multiple icon locations (dev vs release)
+    let resource_dir = app_handle.path().resource_dir().ok();
+    eprintln!("[TRAY] resource_dir: {:?}", resource_dir);
+    
     let icon_paths = vec![
-      app_handle.path().resource_dir().ok().map(|p| p.join("icons/tray_icon.png")),
+      resource_dir.as_ref().map(|p| p.join("icons/tray_icon.png")),
       std::path::PathBuf::from("src-tauri/icons/tray_icon.png").canonicalize().ok(),
       std::path::PathBuf::from("icons/tray_icon.png").canonicalize().ok(),
     ];
     
+    eprintln!("[TRAY] Trying paths: {:?}", icon_paths);
+    
     let icon_path = icon_paths.into_iter().find_map(|p| {
       p.as_ref().and_then(|path| {
-        if path.exists() {
+        let exists = path.exists();
+        eprintln!("[TRAY] Checking {:?} - exists: {}", path, exists);
+        if exists {
           Some(path.clone())
         } else {
           None
@@ -89,16 +98,24 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
       })
     });
     
+    eprintln!("[TRAY] Selected icon path: {:?}", icon_path);
+    
     if let Some(path) = icon_path {
-      if let Ok(icon) = Image::from_path(&path) {
-        TrayIconBuilder::new()
-          .icon(icon)
-          .menu(&menu)
-      } else {
-        TrayIconBuilder::new()
-          .menu(&menu)
+      match Image::from_path(&path) {
+        Ok(icon) => {
+          eprintln!("[TRAY] Icon loaded successfully from {:?}", path);
+          TrayIconBuilder::new()
+            .icon(icon)
+            .menu(&menu)
+        }
+        Err(e) => {
+          eprintln!("[TRAY] Failed to load icon from {:?}: {:?}", path, e);
+          TrayIconBuilder::new()
+            .menu(&menu)
+        }
       }
     } else {
+      eprintln!("[TRAY] No icon path found");
       TrayIconBuilder::new()
         .menu(&menu)
     }
@@ -125,6 +142,8 @@ fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
       }
     })
     .build(app)?;
+
+  eprintln!("[TRAY] Tray icon setup complete!");
 
   Ok(())
 }
