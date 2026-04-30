@@ -109,7 +109,7 @@ function handleNormalMode(e: KeyboardEvent) {
     state.mode = 'INSERT';
     keyBuffer = '';
     handled = true;
-  } else if (key === 'A') {
+  } else if (key === 'A' && keyBuffer !== 'p') {
     e.preventDefault();
     state.mode = 'INSERT';
     keyBuffer = '';
