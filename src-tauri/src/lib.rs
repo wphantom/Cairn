@@ -28,18 +28,9 @@ pub fn run() {
 }
 
 fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-  use window_vibrancy::apply_vibrancy;
-
-  let window = app.get_webview_window("main").unwrap();
+  // Don't apply native vibrancy - use CSS backdrop-filter instead
+  // This allows CSS background color and blur to be visible
   
-  // Apply vibrancy
-  let _ = apply_vibrancy(
-    &window,
-    window_vibrancy::NSVisualEffectMaterial::HudWindow,
-    None,
-    None,
-  );
-
   // Set activation policy to accessory (no dock icon)
   app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 

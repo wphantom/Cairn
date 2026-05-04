@@ -330,14 +330,22 @@ export async function handleCommand(cmd: string) {
       store.setSortMode('none');
       render();
       break;
-    case 'alpha':
-      const opacity = parseFloat(parts[1]);
-      if (opacity >= 0 && opacity <= 1) {
-        const app = document.getElementById('app') as HTMLElement;
-        if (app) {
-          app.style.opacity = opacity.toString();
-          localStorage.setItem('cairn:opacity', opacity.toString());
-        }
+    case 'bgalpha':
+      const bgAlpha = parseFloat(parts[1]);
+      console.log('[BGALPHA] Received value:', bgAlpha);
+      if (bgAlpha >= 0 && bgAlpha <= 1) {
+        document.documentElement.style.setProperty('--bg-alpha', bgAlpha.toString());
+        console.log('[BGALPHA] Set CSS variable --bg-alpha to:', bgAlpha.toString());
+        localStorage.setItem('cairn:bgalpha', bgAlpha.toString());
+      } else {
+        console.log('[BGALPHA] Invalid value (must be 0-1):', bgAlpha);
+      }
+      break;
+    case 'textalpha':
+      const textAlpha = parseFloat(parts[1]);
+      if (textAlpha >= 0 && textAlpha <= 1) {
+        document.documentElement.style.setProperty('--text-alpha', textAlpha.toString());
+        localStorage.setItem('cairn:textalpha', textAlpha.toString());
       }
       break;
     case 'fontsize':
@@ -352,11 +360,13 @@ export async function handleCommand(cmd: string) {
     case 'bgcolor':
       const bgColor = parts[1];
       if (bgColor && bgColor.match(/^#[0-9a-fA-F]{6}$/)) {
-        const app = document.getElementById('app') as HTMLElement;
-        if (app) {
-          app.style.backgroundColor = bgColor;
-          localStorage.setItem('cairn:bgcolor', bgColor);
-        }
+        const r = parseInt(bgColor.slice(1, 3), 16);
+        const g = parseInt(bgColor.slice(3, 5), 16);
+        const b = parseInt(bgColor.slice(5, 7), 16);
+        document.documentElement.style.setProperty('--bg-r', r.toString());
+        document.documentElement.style.setProperty('--bg-g', g.toString());
+        document.documentElement.style.setProperty('--bg-b', b.toString());
+        localStorage.setItem('cairn:bgcolor', bgColor);
       }
       break;
     case 'textcolor':

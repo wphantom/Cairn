@@ -24,10 +24,14 @@ async function main() {
     render();
     
     // Restore persisted settings
-    const savedOpacity = localStorage.getItem('cairn:opacity');
-    if (savedOpacity) {
-      const app = document.getElementById('app') as HTMLElement;
-      if (app) app.style.opacity = savedOpacity;
+    const savedBgAlpha = localStorage.getItem('cairn:bgalpha');
+    if (savedBgAlpha) {
+      document.documentElement.style.setProperty('--bg-alpha', savedBgAlpha);
+    }
+
+    const savedTextAlpha = localStorage.getItem('cairn:textalpha');
+    if (savedTextAlpha) {
+      document.documentElement.style.setProperty('--text-alpha', savedTextAlpha);
     }
 
     const savedFontSize = localStorage.getItem('cairn:fontsize');
@@ -38,8 +42,12 @@ async function main() {
 
     const savedBgColor = localStorage.getItem('cairn:bgcolor');
     if (savedBgColor) {
-      const app = document.getElementById('app') as HTMLElement;
-      if (app) app.style.backgroundColor = savedBgColor;
+      const r = parseInt(savedBgColor.slice(1, 3), 16);
+      const g = parseInt(savedBgColor.slice(3, 5), 16);
+      const b = parseInt(savedBgColor.slice(5, 7), 16);
+      document.documentElement.style.setProperty('--bg-r', r.toString());
+      document.documentElement.style.setProperty('--bg-g', g.toString());
+      document.documentElement.style.setProperty('--bg-b', b.toString());
     }
 
     const savedTextColor = localStorage.getItem('cairn:textcolor');

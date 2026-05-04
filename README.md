@@ -55,6 +55,12 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 - `:s@` - Sort by context name (alphabetical)
 - `:s+` - Sort by project name (alphabetical)
 - `:sD` - Sort by due date (nearest first)
+- `:bgalpha <0-1>` - Set background transparency (0=fully transparent, 1=fully opaque)
+- `:textalpha <0-1>` - Set text/UI transparency (0=fully transparent, 1=fully opaque)
+- `:fontsize <size>` - Set font size in pixels
+- `:bgcolor <#hex>` - Set background color (e.g., `#000000`)
+- `:textcolor <#hex>` - Set text color (e.g., `#FFFFFF`)
+- `:archive` - Move completed tasks to `~/done.txt`
 
 ## Build & Run
 
@@ -118,7 +124,8 @@ todofile="~/todo.txt"
 #####  STARTUP COMMANDS
 # Here are commands that will be executed at startup (they can also be used
 # directly in the app)
-:alpha 0.5
+:bgalpha 0.5
+:textalpha 1
 #:size 600 400  # :size command not implemented yet in cairn
 :fontsize 8
 :bgcolor #000000
