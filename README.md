@@ -77,7 +77,41 @@ npm exec tauri build
 
 Output: `/src-tauri/target/release/bundle/macos/Cairn.app`
 
-## Configuration
+## Integration with Raycast
+
+Cairn supports URL schemes for integration with [Raycast](https://www.raycast.com/) and other launcher applications.
+
+### Available URL Schemes
+
+- `cairn://toggle` - Toggle window visibility (show if hidden, hide if visible)
+- `cairn://show` - Show the window
+- `cairn://hide` - Hide the window
+
+### Using with Raycast
+
+Create a Raycast Script command to toggle Cairn:
+
+```bash
+#!/bin/bash
+open "cairn://toggle"
+```
+
+Or use with AppleScript for more control:
+
+```applescript
+#!/usr/bin/env osascript
+tell application "Cairn"
+    activate
+end tell
+```
+
+### Using with Alfred or Spotlight
+
+The `cairn://` scheme works with any launcher that supports URL schemes, including:
+- **Spotlight**: Press Cmd+Space, type `cairn://toggle`, press Enter
+- **Alfred**: Create a Custom URL search
+- **Other launchers**: Any app that supports `open` URLs
+
 
 - **App identifier**: `fr.sylvainclement.cairn`
 - **Default file**: `~/todo.txt`
