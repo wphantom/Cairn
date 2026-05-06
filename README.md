@@ -89,21 +89,16 @@ Cairn supports URL schemes for integration with [Raycast](https://www.raycast.co
 
 ### Using with Raycast
 
-Create a Raycast Script command to toggle Cairn:
+The easiest way is to add a **Quicklink** in Raycast:
 
-```bash
-#!/bin/bash
-open "cairn://toggle"
-```
+1. Open Raycast → go to **Extensions → Quicklinks**
+2. Click **+** to create a new Quicklink
+3. Set **Name**: `Toggle Cairn`
+4. Set **Link**: `cairn://toggle`
+5. Set **Open With**: `Cairn`
+6. Assign a hotkey or search for it by name
 
-Or use with AppleScript for more control:
-
-```applescript
-#!/usr/bin/env osascript
-tell application "Cairn"
-    activate
-end tell
-```
+That's it — triggering the Quicklink will instantly toggle Cairn's window.
 
 ### Using with Alfred or Spotlight
 
