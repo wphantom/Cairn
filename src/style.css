@@ -5,6 +5,12 @@
   --bg-r: 0;
   --bg-g: 0;
   --bg-b: 0;
+  --dragzone-r: 13;
+  --dragzone-g: 45;
+  --dragzone-b: 107;
+  --selected-r: 0;
+  --selected-g: 122;
+  --selected-b: 255;
 }
 
 body {
@@ -23,6 +29,7 @@ body {
   position: relative;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
 #bg-layer {
@@ -41,15 +48,20 @@ body {
 .header {
   height: 32px;
   padding: 8px 12px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   cursor: move;
   user-select: none;
   opacity: var(--text-alpha);
   position: relative;
   z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.header.focused {
+  background: rgba(var(--dragzone-r), var(--dragzone-g), var(--dragzone-b), var(--bg-alpha));
 }
 
 .header .title,
@@ -58,11 +70,15 @@ body {
 }
 
 .header .title {
+  grid-column: 2;
   font-weight: 600;
   font-size: 14px;
+  text-align: center;
 }
 
 .filter-indicator {
+  grid-column: 3;
+  justify-self: end;
   font-size: 11px;
   color: #888;
   opacity: 0;
@@ -96,8 +112,8 @@ body {
 }
 
 .task.cursor {
-  background: rgba(0, 122, 255, 0.2);
-  border-left: 2px solid #007aff;
+  background: rgba(var(--selected-r), var(--selected-g), var(--selected-b), 0.2);
+  border-left: 2px solid rgb(var(--selected-r), var(--selected-g), var(--selected-b));
   padding-left: 10px;
 }
 

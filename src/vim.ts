@@ -376,6 +376,30 @@ export async function handleCommand(cmd: string) {
         localStorage.setItem('cairn:textcolor', textColor);
       }
       break;
+    case 'dragzonecolor':
+      const dzColor = parts[1];
+      if (dzColor && dzColor.match(/^#[0-9a-fA-F]{6}$/)) {
+        const dzR = parseInt(dzColor.slice(1, 3), 16);
+        const dzG = parseInt(dzColor.slice(3, 5), 16);
+        const dzB = parseInt(dzColor.slice(5, 7), 16);
+        document.documentElement.style.setProperty('--dragzone-r', dzR.toString());
+        document.documentElement.style.setProperty('--dragzone-g', dzG.toString());
+        document.documentElement.style.setProperty('--dragzone-b', dzB.toString());
+        localStorage.setItem('cairn:dragzonecolor', dzColor);
+      }
+      break;
+    case 'selectedcolor':
+      const selColor = parts[1];
+      if (selColor && selColor.match(/^#[0-9a-fA-F]{6}$/)) {
+        const selR = parseInt(selColor.slice(1, 3), 16);
+        const selG = parseInt(selColor.slice(3, 5), 16);
+        const selB = parseInt(selColor.slice(5, 7), 16);
+        document.documentElement.style.setProperty('--selected-r', selR.toString());
+        document.documentElement.style.setProperty('--selected-g', selG.toString());
+        document.documentElement.style.setProperty('--selected-b', selB.toString());
+        localStorage.setItem('cairn:selectedcolor', selColor);
+      }
+      break;
     case 'size':
       // TODO: size command requires Tauri permission flags in Cargo.toml
       // For now, manual window resize via system

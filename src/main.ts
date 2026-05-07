@@ -50,6 +50,26 @@ async function main() {
       document.documentElement.style.setProperty('--bg-b', b.toString());
     }
 
+    const savedDragzoneColor = localStorage.getItem('cairn:dragzonecolor');
+    if (savedDragzoneColor) {
+      const r = parseInt(savedDragzoneColor.slice(1, 3), 16);
+      const g = parseInt(savedDragzoneColor.slice(3, 5), 16);
+      const b = parseInt(savedDragzoneColor.slice(5, 7), 16);
+      document.documentElement.style.setProperty('--dragzone-r', r.toString());
+      document.documentElement.style.setProperty('--dragzone-g', g.toString());
+      document.documentElement.style.setProperty('--dragzone-b', b.toString());
+    }
+
+    const savedSelectedColor = localStorage.getItem('cairn:selectedcolor');
+    if (savedSelectedColor) {
+      const r = parseInt(savedSelectedColor.slice(1, 3), 16);
+      const g = parseInt(savedSelectedColor.slice(3, 5), 16);
+      const b = parseInt(savedSelectedColor.slice(5, 7), 16);
+      document.documentElement.style.setProperty('--selected-r', r.toString());
+      document.documentElement.style.setProperty('--selected-g', g.toString());
+      document.documentElement.style.setProperty('--selected-b', b.toString());
+    }
+
     const savedTextColor = localStorage.getItem('cairn:textcolor');
     if (savedTextColor) {
       document.documentElement.style.color = savedTextColor;
@@ -149,6 +169,19 @@ async function main() {
     await store.loadTasks();
     render();
   });
+
+  // Focus indicator: color the header when the window has focus
+  const headerEl = document.querySelector('.header') as HTMLElement | null;
+  window.addEventListener('focus', () => {
+    headerEl?.classList.add('focused');
+  });
+  window.addEventListener('blur', () => {
+    headerEl?.classList.remove('focused');
+  });
+  // Set initial state based on current focus
+  if (document.hasFocus()) {
+    headerEl?.classList.add('focused');
+  }
 }
 
 main().catch(console.error);
