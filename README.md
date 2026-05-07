@@ -8,6 +8,7 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 - **todo.txt format**: Full support for priorities, projects (+), contexts (@), due dates (due:YYYY-MM-DD) (see [[https://github.com/todotxt/todo.txt]])
 - **File-based storage**: Stores tasks in `~/todo.txt` with automatic synchronization (another file can be specified)
 - **Floating window**: Always-on-top window, can be hidden/shown via keyboard (q) or app menu
+- **Focus indicator**: Header bar highlights with a configurable color when the window has focus
 - **Real-time sync**: File watcher auto-reloads when external changes are made
 - **Search & filter**: Quick search (/) and command-line filtering (:filter)
 - **Drag-able window**: Move window by dragging the title bar
@@ -61,6 +62,8 @@ Minimal, keyboard-driven todo.txt editor for macOS. Built with Tauri 2 + TypeScr
 - `:bgcolor <#hex>` - Set background color (e.g., `#000000`)
 - `:textcolor <#hex>` - Set text color (e.g., `#FFFFFF`)
 - `:archive` - Move completed tasks to `~/done.txt`
+- `:dragzonecolor <#hex>` - Set the header bar color when the window has focus (e.g., `#0D2D6B`)
+- `:selectedcolor <#hex>` - Set the selected task highlight color (e.g., `#007aff`)
 
 ## Build & Run
 
@@ -159,6 +162,8 @@ todofile="~/todo.txt"
 :fontsize 8
 :bgcolor #000000
 :textcolor #FFFFFF
+:dragzonecolor #0D2D6B
+:selectedcolor #007aff
 
 ```
  
